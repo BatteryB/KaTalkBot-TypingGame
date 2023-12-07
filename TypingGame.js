@@ -40,7 +40,7 @@ let cnt = 0;
 let startTime;
 let endTime;
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
-    if (room == 'your room name') {
+    if (room == 'your room name')  { //채팅방 이름 수정 필수 / Modifying chat room name is required
         if (msg == '!타자') {
             replier.reply(help());
         }
@@ -48,6 +48,8 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
         Start(msg, replier, sender);
 
         PlayGame(msg, replier, sender);
+
+        quietGame(msg, replier);
     }
 }
 function Start(msg, replier, sender) {
@@ -59,46 +61,56 @@ function Start(msg, replier, sender) {
             setTimeout(() => replier.reply('2초 후 게임을 시작합니다.'), 2000);
             setTimeout(() => replier.reply('1초 후 게임을 시작합니다.'), 3000);
             setTimeout(() => isStart = true, 4000);
-            setTimeout(() => startTime = new Date(), 4000);
-            setTimeout(() => randomText(replier), 4000);
+            setTimeout(() => startTime = new Date().getTime(), 4000);
+            setTimeout(() => pickText(replier), 4000);
         } else {
             replier.reply('이미 게임이 진행중 입니다, 잠시 기다려주세요.\n현재 플레이어 : ' + player);
         }
     }
 }
+
 function PlayGame(msg, replier, sender) {
-    let playerText;
+    let playerText = '';
 
     if (msg.startsWith('!타자 ')) {
+        playerText = msg.substr(4);
+
         if (!isStart) {
-            if (sender == player) {
-                playerText = msg.substr(4);
-                if (playerText == text) {
-                    textLangth += text.length;
-                    cnt++;
-                    if (cnt >= 5) {
-                        endTime = new Date();
-                        isStart = false;
-                        Typing(replier);
-                    } else {
-                        randomText(replier);
-                    }
-                } else {
-                    replier.reply('오타가 있습니다, 다시 입력해주세요.');
-                    replier.reply(text);
-                }
-            } else {
-                replier.reply('플레이어만 입력할 수 있습니다.');
+
+        }else if(sender !== player){
+            replier.reply('플레이어만 입력할 수 있습니다.');
+        }else if(playerText !== text){
+            replier.reply('오타가 있습니다, 다시 입력해주세요.');
+            replier.reply(text);
+        }else{
+            textLangth += playerText.length;
+            if(cnt < 5){
+                cnt++;
+                pickText(replier);
+            }else{
+                endTime = new Date().getTime();
+                isStart = false;
+                Typing(replier);
             }
-        } else {
-            replier.reply('게임이 시작되지 않았습니다, 게임을 먼저 시작해주세요.');
+        }
+    }
+}
+
+function quietGame(msg, replier){
+    if(msg == '!타자종료'){
+        if(!isStart){
+            replier.reply('먼저 게임을 시작해주세요.');
+        }else{
+            endTime = new Date().getTime();
+            replier.reply(player + '님의 선택으로 게임이 종료되었습니다.');
+            Typing(replier);
         }
     }
 }
 
 function Typing(replier) {
     let time = (endTime - startTime) / 1000;
-    let playerTyping = Math.round((textLangth * time) / 60 * 2.3);
+    let playerTyping = Math.round((textLangth * time) / 60);
 
     replier.reply(player + '님의 결과\n' + playerTyping + '타');
     startTime = 0;
@@ -107,9 +119,10 @@ function Typing(replier) {
     player = '';
     textLangth = 0;
     text = '';
+    isStart = false;
 }
 
-function randomText(replier) {
+function pickText(replier) {
     let randomNum = Math.floor(Math.random() * typingText.length);
     text = typingText[randomNum];
     replier.reply(text);
@@ -119,6 +132,7 @@ function help() {
     let msg = '타자게임 명령어\n\n';
     const help = [
         '!타자시작',
+        '!타자종료',
         '!타자 (제시 문장)'
     ];
 
