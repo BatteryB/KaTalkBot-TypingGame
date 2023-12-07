@@ -31,6 +31,7 @@ const typingText = [
     "이기기 위해서는 한 번 이상 전쟁을 치러야 할 때도 있다.",
     "인간은 자신이 원하는 만큼 위대해질 수 있다. 자신을 믿고 용기, 투지, 헌신, 경쟁력있는 추진력을 가진다면, 그리고 가치있는 것들을 위한 대가로 작은 것들을 희생할 용의가 있다면 가능하다."
 ];
+const prefix = '!'; // 접두사 변경 선택 / Select Change Prefix
 
 let isStart = false;
 let text = '';
@@ -40,8 +41,8 @@ let cnt = 0;
 let startTime;
 let endTime;
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
-    if (room == 'your room name')  { //채팅방 이름 수정 필수 / Modifying chat room name is required
-        if (msg == '!타자') {
+    if (room == 'your room name') { //채팅방 이름 수정 필수 / Modifying chat room name is required
+        if (msg == prefix + '타자') {
             replier.reply(help());
         }
 
@@ -53,7 +54,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
     }
 }
 function Start(msg, replier, sender) {
-    if (msg == '!타자시작') {
+    if (msg == prefix + '타자시작') {
         if (!isStart) {
             player = sender;
             replier.reply('잠시후 게임을 시작합니다.\n플레이어 : ' + player);
@@ -72,22 +73,22 @@ function Start(msg, replier, sender) {
 function PlayGame(msg, replier, sender) {
     let playerText = '';
 
-    if (msg.startsWith('!타자 ')) {
+    if (msg.startsWith(prefix + '타자 ')) {
         playerText = msg.substr(4);
 
         if (!isStart) {
 
-        }else if(sender !== player){
+        } else if (sender !== player) {
             replier.reply('플레이어만 입력할 수 있습니다.');
-        }else if(playerText !== text){
+        } else if (playerText !== text) {
             replier.reply('오타가 있습니다, 다시 입력해주세요.');
             replier.reply(text);
-        }else{
+        } else {
             textLangth += playerText.length;
-            if(cnt < 5){
+            if (cnt < 5) {
                 cnt++;
                 pickText(replier);
-            }else{
+            } else {
                 endTime = new Date().getTime();
                 isStart = false;
                 Typing(replier);
@@ -96,11 +97,11 @@ function PlayGame(msg, replier, sender) {
     }
 }
 
-function quietGame(msg, replier){
-    if(msg == '!타자종료'){
-        if(!isStart){
+function quietGame(msg, replier) {
+    if (msg == prefix + '타자종료') {
+        if (!isStart) {
             replier.reply('먼저 게임을 시작해주세요.');
-        }else{
+        } else {
             endTime = new Date().getTime();
             replier.reply(player + '님의 선택으로 게임이 종료되었습니다.');
             Typing(replier);
